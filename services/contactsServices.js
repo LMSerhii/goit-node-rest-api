@@ -1,89 +1,59 @@
-import { readFile, writeFile } from "fs/promises";
-import path from "path";
-import { bodyValidate } from "../helpers/bodyValidate.js";
-
-const contactsPath = path.join("db", "contacts.json");
+import {
+  readContactsFile,
+  writeContactsFile,
+} from "../helpers/fileOperations.js";
 
 export async function listContacts() {
-  try {
-    const res = await readFile(contactsPath);
-    return JSON.parse(res);
-  } catch (error) {
-    return [];
-  }
+  return await readContactsFile();
 }
 
 export async function getContactById(contactId) {
-  try {
-    const res = await readFile(contactsPath);
-    const contactsList = JSON.parse(res);
+  const contactsList = await readContactsFile();
 
-    const foundContact = contactsList.find(
-      (contact) => contact.id === contactId
-    );
-
-    return foundContact || null;
-  } catch (error) {
-    return null;
-  }
+  return contactsList.find((contact) => contact.id === contactId) || null;
 }
 
 export async function removeContact(contactId) {
-  try {
-    const res = await readFile(contactsPath);
-    const contactsList = JSON.parse(res);
+  const contactsList = await readContactsFile();
 
-    const index = contactsList.findIndex((contact) => contact.id === contactId);
+  const index = contactsList.findIndex((contact) => contact.id === contactId);
 
-    if (index !== -1) {
-      const removedContact = contactsList.splice(index, 1)[0];
+  if (index === -1) return null;
 
-      await writeFile(contactsPath, JSON.stringify(contactsList, null, 2));
+  const removedContact = contactsList.splice(index, 1)[0];
 
-      return removedContact;
-    } else return null;
-  } catch (error) {
-    return null;
-  }
+  await writeContactsFile(contactsList);
+
+  return removedContact;
 }
 
 export async function addContact(name, email, phone) {
-  try {
-    const res = await readFile(contactsPath);
-    const contactsList = JSON.parse(res);
+  const contactsList = await readContactsFile();
 
-    const newContact = { id: Date.now().toString(), name, email, phone };
-    const newContactsList = [...contactsList, newContact];
+  const newContact = { id: Date.now().toString(), name, email, phone };
 
-    await writeFile(contactsPath, JSON.stringify(newContactsList, null, 2));
+  contactsList.push(newContact);
 
-    return newContact;
-  } catch (error) {
-    return null;
-  }
+  await writeContactsFile(contactsList);
+
+  return newContact;
 }
 
 export async function refreshContact(id, name, email, phone) {
-  try {
-    const res = await readFile(contactsPath);
-    const contactsList = JSON.parse(res);
+  const contactsList = await readContactsFile();
 
-    const index = contactsList.findIndex((user) => user.id === id);
+  const index = contactsList.findIndex((user) => user.id === id);
 
-    if (index === -1) {
-      res.status(404).json({
-        msg: "User not found",
-      });
-    }
+  if (index === -1) return null;
 
-    const newData = bodyValidate(name, email, phone);
+  const updatedContact = { ...contactsList[index] };
+  if (name !== undefined) updatedContact.name = name;
+  if (email !== undefined) updatedContact.email = email;
+  if (phone !== undefined) updatedContact.phone = phone;
 
-    contactsList[index] = { ...contactsList[index], ...newData };
+  contactsList[index] = updatedContact;
 
-    await writeFile(contactsPath, JSON.stringify(contactsList, null, 2));
+  await writeContactsFile(contactsList);
 
-    return contactsList[index];
-  } catch (error) {
-    return null;
-  }
+  return updatedContact;
 }

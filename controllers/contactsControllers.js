@@ -1,3 +1,4 @@
+import { handleContactNotFound } from "../middlewares/contactMiddleware.js";
 import {
   listContacts,
   getContactById,
@@ -17,7 +18,9 @@ export const getOneContact = async (req, res) => {
 
   const contact = await getContactById(id);
 
-  if (!contact) return res.status(404).json({ message: "Not found" });
+  if (!contact) {
+    return handleContactNotFound(req, res);
+  }
 
   res.status(200).json(contact);
 };
@@ -27,23 +30,30 @@ export const deleteContact = async (req, res) => {
 
   const contact = await removeContact(id);
 
-  if (!contact) return res.status(404).json({ message: "Not found" });
+  if (!contact) {
+    return handleContactNotFound(req, res);
+  }
 
   res.status(200).json(contact);
 };
 
-export const createContact = async (req, res) => {
+export const createContact = async (req, res, next) => {
   const { name, email, phone } = req.body;
 
   const newContact = await addContact(name, email, phone);
+
   res.status(201).json(newContact);
 };
 
-export const updateContact = async (req, res) => {
+export const updateContact = async (req, res, next) => {
   const { id } = req.params;
   const { name, email, phone } = req.body;
 
   const contact = await refreshContact(id, name, email, phone);
+
+  if (!contact) {
+    return handleContactNotFound(req, res);
+  }
 
   res.status(200).json(contact);
 };
