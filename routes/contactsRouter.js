@@ -6,6 +6,10 @@ import {
   createContact,
   updateContact,
 } from "../controllers/contactsControllers.js";
+import {
+  validateCreateContact,
+  validateUpdateContact,
+} from "../middlewares/contactMiddleware.js";
 
 const contactsRouter = express.Router();
 
@@ -15,8 +19,8 @@ contactsRouter.get("/:id", getOneContact);
 
 contactsRouter.delete("/:id", deleteContact);
 
-contactsRouter.post("/", createContact);
+contactsRouter.post("/", validateCreateContact, createContact);
 
-contactsRouter.put("/:id", updateContact);
+contactsRouter.put("/:id", validateUpdateContact, updateContact);
 
 export default contactsRouter;
