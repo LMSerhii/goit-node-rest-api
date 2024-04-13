@@ -13,19 +13,21 @@ import {
   validateUpdateContact,
   validateUpdateFavorite,
 } from "../middlewares/contactMiddleware.js";
+import { auth } from "../middlewares/authMiddleware.js";
 
 const contactsRouter = express.Router();
 
-contactsRouter.get("/", getAllContacts);
+contactsRouter.get("/", auth, getAllContacts);
 
-contactsRouter.get("/:contactId", isValidId, getOneContact);
+contactsRouter.get("/:contactId", auth, isValidId, getOneContact);
 
-contactsRouter.delete("/:contactId", isValidId, deleteContact);
+contactsRouter.delete("/:contactId", auth, isValidId, deleteContact);
 
-contactsRouter.post("/", validateCreateContact, createContact);
+contactsRouter.post("/", auth, validateCreateContact, createContact);
 
 contactsRouter.put(
   "/:contactId",
+  auth,
   isValidId,
   validateUpdateContact,
   updateContact
@@ -33,6 +35,7 @@ contactsRouter.put(
 
 contactsRouter.patch(
   "/:contactId/favorite",
+  auth,
   isValidId,
   validateUpdateFavorite,
   updateStatus

@@ -46,7 +46,6 @@ export const login = catchAsync(async (req, res) => {
   }
 
   const payload = {
-    email: user.email,
     id: user._id,
   };
 
