@@ -21,11 +21,6 @@ export const validateUpdateContact = (req, res, next) => {
 };
 
 export const validateUpdateFavorite = (req, res, next) => {
-  if (Object.keys(req.body).length === 0) {
-    next(HttpError(400, "Body must have at least one field"));
-    return;
-  }
-
   validateBody(updateFavoriteSchema)(req, res, next);
 };
 
