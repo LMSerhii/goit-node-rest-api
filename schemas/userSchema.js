@@ -16,5 +16,4 @@ export const loginSchema = Joi.object({
 
 export const subscriptionSchema = Joi.object({
   subscription: Joi.string().valid("starter", "pro", "business").required(),
-  // token: Joi.string(),
 }).options({ abortEarly: false });
