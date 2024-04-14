@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import { catchAsync } from "../helpers/catchAsync.js";
 import { findUserById } from "../services/userService.js";
+import { getContactById } from "../services/contactsServices.js";
 
 dotenv.config();
 
@@ -23,7 +24,7 @@ export const auth = async (req, res, next) => {
     const { id } = jwt.verify(token, SECRET_KEY);
     const user = await findUserById(id);
 
-    if (!user) {
+    if (!user || !user.token || user.token !== token) {
       next(HttpError(401, "Not authorized"));
       return;
     }
@@ -36,4 +37,18 @@ export const auth = async (req, res, next) => {
   }
 };
 
-// export const logout = async () => {}
+export const verifyOwner = catchAsync(async (req, res, next) => {
+  const { contactId } = req.params;
+  const { _id: owner } = req.user;
+
+  const contact = await getContactById(contactId);
+
+  if (!contact) return next(HttpError(404, "Contact not found"));
+
+  if (contact.owner.toString() !== owner.toString()) {
+    next(HttpError(403));
+    return;
+  }
+
+  next();
+});

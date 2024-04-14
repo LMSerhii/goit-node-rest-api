@@ -1,6 +1,7 @@
 import { Contact } from "../models/contact.js";
 
-export const listContacts = (owner) => Contact.find({ owner });
+export const listContacts = (owner, projections, options) =>
+  Contact.find(owner, projections, options);
 
 export const getContactById = (contactId) => Contact.findById(contactId);
 

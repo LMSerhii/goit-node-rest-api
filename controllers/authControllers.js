@@ -5,7 +5,12 @@ import {
   comparePassword,
   createHashPassword,
 } from "../services/hashService.js";
-import { createUser, findUserByEmail } from "../services/userService.js";
+import {
+  createUser,
+  findUserByEmail,
+  updateSubscription,
+  updateToken,
+} from "../services/userService.js";
 
 import dotenv from "dotenv";
 
@@ -51,11 +56,41 @@ export const login = catchAsync(async (req, res) => {
 
   const token = jwt.sign(payload, SECRET_KEY, { expiresIn: "23h" });
 
+  await updateToken(user._id, token);
+
   res.status(200).json({
     token,
     user: {
       email: user.email,
       subscription: user.subscription,
     },
+  });
+});
+
+export const current = catchAsync(async (req, res) => {
+  const { email, subscription } = req.user;
+
+  res.status(200).json({
+    email,
+    subscription,
+  });
+});
+
+export const logout = catchAsync(async (req, res) => {
+  const { _id } = req.user;
+
+  await updateToken(_id, null);
+
+  res.sendStatus(204);
+});
+
+export const subscriptionUpdate = catchAsync(async (req, res) => {
+  const { _id } = req.user;
+  const { subscription } = req.body;
+
+  await updateSubscription(_id, subscription);
+
+  res.status(200).json({
+    subscription,
   });
 });

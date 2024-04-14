@@ -12,7 +12,16 @@ import {
 export const getAllContacts = catchAsync(async (req, res) => {
   const { _id: owner } = req.user;
 
-  const contacts = await listContacts(owner);
+  const { page = 1, limit = 10, favorite } = req.query;
+
+  // pagination
+  const skip = (page - 1) * limit;
+  const options = { skip, limit };
+
+  // filter
+  const filter = favorite ? { owner, favorite } : { owner };
+
+  const contacts = await listContacts(filter, {}, options);
 
   res.status(200).json(contacts);
 });

@@ -6,8 +6,7 @@ export const findUserByEmail = (email) => User.findOne({ email });
 
 export const findUserById = (id) => User.findById(id);
 
-// export const findUserByUsername = username => User.findOne({ username });
+export const updateToken = (id, token) => User.findByIdAndUpdate(id, { token });
 
-// export const findUserByUsernameAndPassword = (username, password) => User.findOne({ username, password });
-
-// export const findUserByUsernameAndEmail = (username, email) => User.findOne({ username, email });
+export const updateSubscription = (id, subscription) =>
+  User.findByIdAndUpdate(id, { subscription });

@@ -31,7 +31,6 @@ export const handleContactNotFound = (req, res, next) => {
 
 export const isValidId = (req, res, next) => {
   const { contactId } = req.params;
-  console.log(req.params);
 
   if (!isValidObjectId(contactId)) {
     next(HttpError(400, `${contactId} is not valid id`));
