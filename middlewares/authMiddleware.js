@@ -46,7 +46,7 @@ export const verifyOwner = catchAsync(async (req, res, next) => {
   if (!contact) return next(HttpError(404, "Contact not found"));
 
   if (contact.owner.toString() !== owner.toString()) {
-    next(HttpError(403));
+    next(HttpError(404));
     return;
   }
 
