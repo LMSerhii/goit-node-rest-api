@@ -10,3 +10,9 @@ export const updateToken = (id, token) => User.findByIdAndUpdate(id, { token });
 
 export const updateSubscription = (id, subscription) =>
   User.findByIdAndUpdate(id, { subscription });
+
+export const updatingAvatar = (id, avatarURL) => {
+  console.log(id);
+  console.log(avatarURL);
+  return User.findByIdAndUpdate(id, { avatarURL });
+};
