@@ -1,5 +1,6 @@
 import express from "express";
 import {
+  validateAvatarUser,
   validateLoginrUser,
   validateRegisterUser,
   validateSubscriptionUser,
@@ -22,7 +23,13 @@ authRouter.post("/login", validateLoginrUser, login);
 authRouter.post("/logout", auth, logout);
 authRouter.get("/current", auth, current);
 
-authRouter.patch("/avatars", auth, upload.single("avatar"), updateAvatar);
+authRouter.patch(
+  "/avatars",
+  auth,
+  upload.single("avatar"),
+  validateAvatarUser,
+  updateAvatar
+);
 authRouter.patch("/", auth, validateSubscriptionUser, subscriptionUpdate);
 
 export default authRouter;

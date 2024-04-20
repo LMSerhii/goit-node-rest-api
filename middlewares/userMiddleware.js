@@ -3,6 +3,7 @@ import {
   loginSchema,
   registerSchema,
   subscriptionSchema,
+  updateAvatarSchema,
 } from "../schemas/userSchema.js";
 
 export const validateRegisterUser = (req, res, next) => {
@@ -15,4 +16,8 @@ export const validateLoginrUser = (req, res, next) => {
 
 export const validateSubscriptionUser = (req, res, next) => {
   validateBody(subscriptionSchema)(req, res, next);
+};
+
+export const validateAvatarUser = (req, res, next) => {
+  validateBody(updateAvatarSchema)(req, res, next);
 };

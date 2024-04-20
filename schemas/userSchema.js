@@ -17,3 +17,9 @@ export const loginSchema = Joi.object({
 export const subscriptionSchema = Joi.object({
   subscription: Joi.string().valid("starter", "pro", "business").required(),
 }).options({ abortEarly: false });
+
+export const updateAvatarSchema = Joi.object({
+  avatarURL: Joi.string()
+    .required()
+    .error(new Error("Avatar is a required field")),
+});
