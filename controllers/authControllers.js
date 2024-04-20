@@ -1,4 +1,6 @@
 import jwt from "jsonwebtoken";
+import path from "path";
+import gravatar from "gravatar";
 import HttpError from "../helpers/HttpError.js";
 import { catchAsync } from "../helpers/catchAsync.js";
 import {
@@ -10,11 +12,15 @@ import {
   findUserByEmail,
   updateSubscription,
   updateToken,
+  updatingAvatar,
 } from "../services/userService.js";
 
 import dotenv from "dotenv";
+import { removeImage, updateImage } from "../services/fileServices.js";
 
 dotenv.config();
+
+const avatarDir = path.join(process.cwd(), "public", "avatars");
 
 export const register = catchAsync(async (req, res) => {
   const { email, password } = req.body;
@@ -25,8 +31,13 @@ export const register = catchAsync(async (req, res) => {
   }
 
   const hashPassword = await createHashPassword(password);
+  const avatarURL = gravatar.url(email, { s: "100", r: "x", d: "retro" }, true);
 
-  const newUser = await createUser({ ...req.body, password: hashPassword });
+  const newUser = await createUser({
+    ...req.body,
+    password: hashPassword,
+    avatarURL,
+  });
 
   res.status(201).json({
     user: {
@@ -94,5 +105,27 @@ export const subscriptionUpdate = catchAsync(async (req, res) => {
 
   res.status(200).json({
     subscription,
+  });
+});
+
+export const updateAvatar = catchAsync(async (req, res) => {
+  const { _id } = req.user;
+
+  const { path: tempUpload, originalname } = req.file;
+
+  const filename = `${_id}_${originalname}`;
+
+  const destUpload = path.join(avatarDir, filename);
+
+  const avatarURL = path.join("avatars", filename);
+
+  await removeImage(tempUpload, destUpload);
+
+  await updateImage(destUpload);
+
+  await updatingAvatar(_id, avatarURL);
+
+  res.status(200).json({
+    avatarURL,
   });
 });
