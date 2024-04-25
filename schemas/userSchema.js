@@ -7,6 +7,13 @@ export const registerSchema = Joi.object({
   token: Joi.string(),
 }).options({ abortEarly: false });
 
+export const emailSchema = Joi.object({
+  email: Joi.string()
+    .email()
+    .required()
+    .error(new Error("missing required field email")),
+});
+
 export const loginSchema = Joi.object({
   password: Joi.string().min(8).required(),
   email: Joi.string().email().required(),

@@ -1,5 +1,6 @@
 import validateBody from "../helpers/validateBody.js";
 import {
+  emailSchema,
   loginSchema,
   registerSchema,
   subscriptionSchema,
@@ -20,4 +21,8 @@ export const validateSubscriptionUser = (req, res, next) => {
 
 export const validateAvatarUser = (req, res, next) => {
   validateBody(updateAvatarSchema)(req, res, next);
+};
+
+export const validateVerifyUser = (req, res, next) => {
+  validateBody(emailSchema)(req, res, next);
 };

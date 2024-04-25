@@ -1,6 +1,9 @@
 import jwt from "jsonwebtoken";
 import path from "path";
+import dotenv from "dotenv";
 import gravatar from "gravatar";
+import { nanoid } from "nanoid";
+
 import HttpError from "../helpers/HttpError.js";
 import { catchAsync } from "../helpers/catchAsync.js";
 import {
@@ -10,13 +13,14 @@ import {
 import {
   createUser,
   findUserByEmail,
+  findUserByVerificationToken,
   updateSubscription,
   updateToken,
+  updateVerify,
   updatingAvatar,
 } from "../services/userService.js";
-
-import dotenv from "dotenv";
 import { removeImage, updateImage } from "../services/fileServices.js";
+import { sendEmail } from "../services/emailServices.js";
 
 dotenv.config();
 
@@ -24,6 +28,7 @@ const avatarDir = path.join(process.cwd(), "public", "avatars");
 
 export const register = catchAsync(async (req, res) => {
   const { email, password } = req.body;
+
   const user = await findUserByEmail(email);
 
   if (user) {
@@ -31,13 +36,25 @@ export const register = catchAsync(async (req, res) => {
   }
 
   const hashPassword = await createHashPassword(password);
+
   const avatarURL = gravatar.url(email, { s: "100", r: "x", d: "retro" }, true);
+
+  const verificationToken = nanoid();
 
   const newUser = await createUser({
     ...req.body,
     password: hashPassword,
     avatarURL,
+    verificationToken,
   });
+
+  const verifyEmail = {
+    email,
+    subject: "Verify email",
+    html: `<a target="_blank" href="${process.env.BASE_URL}/api/users/verify/${verificationToken}">Click verify email</a>`,
+  };
+
+  await sendEmail(verifyEmail);
 
   res.status(201).json({
     user: {
@@ -47,6 +64,44 @@ export const register = catchAsync(async (req, res) => {
   });
 });
 
+export const verifyEmail = catchAsync(async (req, res) => {
+  const { verificationToken } = req.params;
+
+  const user = await findUserByVerificationToken(verificationToken);
+
+  if (!user) {
+    throw HttpError(404, "User not found");
+  }
+
+  await updateVerify(user._id);
+
+  res.status(200).json({ message: "Verification successful" });
+});
+
+export const resendVerifyEmail = catchAsync(async (req, res) => {
+  const { email } = req.body;
+
+  const user = await findUserByEmail(email);
+
+  if (!user) {
+    throw HttpError(404, "User not found");
+  }
+
+  if (user.verify) {
+    throw HttpError(400, "Verification has already been passed");
+  }
+
+  const verifyEmail = {
+    email,
+    subject: "Verify email",
+    html: `<a target="_blank" href="${process.env.BASE_URL}/api/users/verify/${user.verificationToken}">Click verify email</a>`,
+  };
+
+  await sendEmail(verifyEmail);
+
+  res.status(200).json({ message: "Verification email sent" });
+});
+
 export const login = catchAsync(async (req, res) => {
   const { email, password } = req.body;
   const { SECRET_KEY } = process.env;
@@ -54,7 +109,11 @@ export const login = catchAsync(async (req, res) => {
   const user = await findUserByEmail(email);
 
   if (!user) {
-    throw HttpError(401, "Email or password is wrong");
+    throw HttpError(400, "User not found");
+  }
+
+  if (!user.verify) {
+    throw HttpError(401, "Account is not verified");
   }
 
   const isPassword = await comparePassword(password, user.password);
