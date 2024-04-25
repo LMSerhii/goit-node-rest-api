@@ -109,11 +109,11 @@ export const login = catchAsync(async (req, res) => {
   const user = await findUserByEmail(email);
 
   if (!user) {
-    throw HttpError(401, "Email or password is wrong");
+    throw HttpError(400, "User not found");
   }
 
   if (!user.verify) {
-    throw HttpError(401, "Email or password is wrong");
+    throw HttpError(401, "Account is not verified");
   }
 
   const isPassword = await comparePassword(password, user.password);
